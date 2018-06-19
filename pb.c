@@ -53,7 +53,7 @@ pb_cut() {
 }
 
 static void
-pb_bar(int length, int progress) {
+pb_bar(int length, const int progress) {
 	int i = 0;
 	length -= 10;
 
@@ -68,7 +68,7 @@ pb_bar(int length, int progress) {
 }
 
 static void
-pb_draw_row(struct Row *r) {
+pb_draw_row(const struct Row *r) {
 	char str[] = "                    ";
 
 	if (r->progress >= 0) {
@@ -84,7 +84,7 @@ pb_draw_row(struct Row *r) {
 }
 
 static void
-pb_draw(struct Row *row) {
+pb_draw(const struct Row *row) {
 	struct Row *r;
 	fputs(
 			"\x1b[s"     // save cursor
@@ -146,7 +146,7 @@ pb_init() {
 }
 
 static struct Row *
-pb_get_row(int id) {
+pb_get_row(const int id) {
 	int i = 0;
 	struct Row *r;
 
