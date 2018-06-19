@@ -105,7 +105,6 @@ pb_draw(const struct Row *row) {
 	}
 	fputs(
 			"\x1b[u"            /* restore cursor position */
-			"\x1b[7h"           /* enable row wrap */
 			"\x1b[?25h",        /* enable cursor */
 			tty);
 }
