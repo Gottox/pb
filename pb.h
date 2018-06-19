@@ -39,6 +39,6 @@ int pb(int *id, const int progress, const char *fmt, ...);
  *
  * returns: 0 on success, < 0 on failure.
  */
-void pb_clean(void);
+int pb_clean(void);
 
 #endif /* !PROGRESS_H */
