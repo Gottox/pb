@@ -33,7 +33,7 @@ static FILE *tty = NULL;
 static struct winsize ws;
 static int next_id = 1024;
 static struct Row *rows = NULL;
-static pthread_mutex_t mutex;
+static pthread_mutex_t mutex = { 0 };
 
 static void
 pb_cut() {
