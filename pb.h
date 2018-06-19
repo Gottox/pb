@@ -1,6 +1,6 @@
 /*
- * progress.h
- * Copyright (C) 2018 tox <tox@rootkit>
+ * pb.h
+ * Copyright (C) 2018 Enno Boland <g@s01.de>
  *
  * Distributed under terms of the MIT license.
  */
