@@ -52,7 +52,7 @@ pb_cut() {
 	}
 }
 
-void
+static void
 pb_bar(int length, int progress) {
 	int i = 0;
 	length -= 10;
@@ -67,7 +67,7 @@ pb_bar(int length, int progress) {
 	fprintf(tty, "% 3i%% ", progress);
 }
 
-void
+static void
 pb_draw_row(struct Row *r) {
 	char str[] = "                    ";
 
@@ -79,22 +79,21 @@ pb_draw_row(struct Row *r) {
 	else {
 		fwrite(r->msg, sizeof(char), MIN(ws.ws_col, strlen(r->msg)), tty);
 	}
-	// clears line, makes sure line is ended
+	// clears row, makes sure row is ended
 	fputs("\x1b[K\n\x1b[A", tty);
 }
 
-void
+static void
 pb_draw(struct Row *row) {
 	struct Row *r;
-	int i = 0;
 	fputs(
 			"\x1b[s"     // save cursor
-			"\x1b[7l"    // disable line wrap
+			"\x1b[7l"    // disable row wrap
 			"\x1b[?25l"  // disable cursor
-			"\r",        // line start
+			"\r",        // row start
 			tty);
 	for(r = rows; r; r = r->next) {
-		// one 1 line up
+		// one 1 row up
 		fputs("\x1b[A", tty);
 		if(row == NULL || r == row) {
 			pb_draw_row(r);
@@ -104,7 +103,7 @@ pb_draw(struct Row *row) {
 	}
 	fputs(
 			"\x1b[u"     // restore cursor
-			"\x1b[7h"    // enable line wrap
+			"\x1b[7h"    // enable row wrap
 			"\x1b[?25h", // enable cursor
 			tty);
 	fflush(tty);
@@ -147,9 +146,8 @@ pb_init() {
 }
 
 static struct Row *
-get_line(int id) {
+pb_get_row(int id) {
 	int i = 0;
-	int cur[2];
 	struct Row *r;
 
 	if(id) {
@@ -184,7 +182,7 @@ pb(int *id, const int progress, const char *fmt, ...) {
 		fputc('\n', stderr);
 		goto out;
 	}
-	r = get_line(id ? *id : 0);
+	r = pb_get_row(id ? *id : 0);
 	r->progress = progress;
 	if(id) {
 		*id = r->id;

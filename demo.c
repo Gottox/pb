@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-void *
+static void *
 do_load(void *arg) {
 	int id = 0, i;
 
@@ -23,7 +23,7 @@ do_load(void *arg) {
 	return NULL;
 }
 
-void *
+static void *
 do_calculate(void *arg) {
 	int id = 0, i;
 
@@ -37,7 +37,7 @@ do_calculate(void *arg) {
 	return NULL;
 }
 
-void *
+static void *
 do_hack(void *arg) {
 	int id = 0, i;
 
@@ -53,7 +53,7 @@ do_hack(void *arg) {
 	return NULL;
 }
 
-void *
+static void *
 do_mine(void *arg) {
 	int id = 0, i;
 
@@ -73,7 +73,7 @@ do_mine(void *arg) {
 	return NULL;
 }
 
-void *
+static void *
 do_encrypt(void *arg) {
 	int id = 0, i;
 
@@ -87,7 +87,8 @@ do_encrypt(void *arg) {
 	return NULL;
 }
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char *argv[]) {
 	pthread_t load_thread;
 	pthread_t calculate_thread;
 	pthread_t hack_thread;
