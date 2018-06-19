@@ -80,7 +80,11 @@ pb_draw_row(const struct Row *r) {
 		fwrite(r->msg, sizeof(char), MIN(ws.ws_col, strlen(r->msg)), tty);
 	}
 	// clears row, makes sure row is ended
-	fputs("\x1b[K\n\x1b[A", tty);
+	fputs(
+			"\x1b[K"     // clear line
+			"\n\x1b[A",  // make sure the line is terminated.
+			             // terminal resizing looks nicer if it does.
+			tty);
 }
 
 static void
