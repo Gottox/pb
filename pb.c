@@ -120,7 +120,7 @@ pb_sigwinch(int sig) {
 
 int
 pb_clean() {
-	static const struct sigaction sa = { .sa_handler = SIG_DFL, { 0 } };
+	static const struct sigaction sa = { .sa_handler = SIG_DFL, { { 0 } } };
 	struct Row *r;
 
 	ws.ws_row = 0;
@@ -136,7 +136,7 @@ pb_clean() {
 
 int
 pb_init() {
-	static const struct sigaction sa = { .sa_handler = pb_sigwinch, { 0 } };
+	static const struct sigaction sa = { .sa_handler = pb_sigwinch, { { 0 } } };
 
 	if (!isatty(fileno(stderr))
 			|| pthread_mutex_init(&mutex, NULL) != 0
