@@ -32,10 +32,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <stdarg.h>
 #include <signal.h>
-#include <termios.h>
 #include <sys/ioctl.h>
 #include <string.h>
 #include <pthread.h>
@@ -74,34 +72,33 @@ pb_cut() {
 }
 
 static void
-pb_bar(int length, const int progress) {
-	int i = 0;
-	length -= 10;
+pb_bar(const int progress) {
+	const static int offset = 30;
+	const int width = ws.ws_col - offset - 30;
+	int i;
 
-	if (length >= 4) {
-		fputs(" [", tty);
-		for (i = 0; i < length; i++) {
-			fputc(progress > i * 100 / length ? '#' : ' ', tty);
-		}
-		fputs("] ", tty);
+	fprintf(tty, 
+			"\x1b[%iG"       /* go to column %i */
+			" [", offset);
+	for (i = 0; i < width; i++) {
+		fputc(progress * width > i * 100 ? '#' : ' ', tty);
 	}
-	fprintf(tty, "% 3i%% ", progress);
+	fprintf(tty,
+			"] "
+			"\x1b[K"           /* clear line from cursor to end */
+			"% 3i%%",
+			progress);
 }
 
 static void
 pb_draw_row(const struct Row *row) {
-	char str[] = "                    ";
 
+	fputs("\x1b[K", tty);   /* clear line from cursor to end */
+	fwrite(row->msg, sizeof(char), MIN(ws.ws_col, strlen(row->msg)), tty);
 	if (row->progress >= 0) {
-		memcpy(str, row->msg, MIN(strlen(row->msg), (sizeof(str) - 1) * sizeof(char)));
-		fwrite(str, sizeof(char), sizeof(str) - 1, tty);
-		pb_bar(ws.ws_col - (sizeof(str) - 1), row->progress);
-	}
-	else {
-		fwrite(row->msg, sizeof(char), MIN(ws.ws_col, strlen(row->msg)), tty);
+		pb_bar(row->progress);
 	}
 	fputs(
-			"\x1b[K"            /* clear line */
 			"\n\x1b[A",         /* make sure the line is terminated.
 			                     * terminal resizing looks nicer if it does. */
 			tty);
@@ -112,6 +109,7 @@ pb_draw(const struct Row *row) {
 	struct Row *r;
 	fputs(
 			"\x1b[s"            /* save cursor position */
+			"\x1b[7l"           /* disable row wrap */
 			"\x1b[?25l"         /* disable cursor */
 			"\r",               /* row start */
 			tty);
@@ -126,17 +124,17 @@ pb_draw(const struct Row *row) {
 	}
 	fputs(
 			"\x1b[u"            /* restore cursor position */
+			"\x1b[7h"           /* enable row wrap */
 			"\x1b[?25h",        /* enable cursor */
 			tty);
 }
 
 static void
 pb_sigwinch(int sig) {
-	if (ioctl(fileno(tty), TIOCGWINSZ, &ws) == -1) {
-		return;
+	if (ioctl(fileno(tty), TIOCGWINSZ, &ws) != -1) {
+		pb_cut();
+		pb_draw(NULL);
 	}
-	pb_cut();
-	pb_draw(NULL);
 }
 
 int
@@ -144,7 +142,6 @@ pb_clean() {
 	static const struct sigaction sa = { .sa_handler = SIG_DFL, { { 0 } } };
 	struct Row *r;
 
-	ws.ws_row = 0;
 	for(; (r = rows);) {
 		rows = r->next;
 		free(r->msg);
@@ -213,7 +210,7 @@ pb(int *id, const int progress, const char *fmt, ...) {
 	rv = vasprintf (&r->msg, fmt, args);
 	pb_draw(r);
 out:
-	va_end (args);
+	va_end(args);
 	fflush(tty);
 	pthread_mutex_unlock(&mutex);
 	return rv;
