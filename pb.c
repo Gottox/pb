@@ -71,7 +71,7 @@ pb_cut() {
 }
 
 static void
-pb_bar(const int progress) {
+pb_draw_bar(const int progress) {
 	const static int offset = 30;
 	const int width = ws.ws_col - offset - 30;
 	int i;
@@ -95,7 +95,7 @@ pb_draw_row(const struct Row *row) {
 	fputs("\x1b[K", tty);   /* clear line from cursor to end */
 	fwrite(row->msg, sizeof(char), MIN(ws.ws_col, strlen(row->msg)), tty);
 	if (row->progress >= 0) {
-		pb_bar(row->progress);
+		pb_draw_bar(row->progress);
 	}
 	fputs(
 			"\n\x1b[A",         /* make sure the line is terminated.
