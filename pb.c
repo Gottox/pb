@@ -42,7 +42,7 @@
 
 struct Row {
 	int id;
-	int progress;
+	short int progress;
 	char *msg;
 	struct Row *next;
 };
@@ -56,7 +56,7 @@ static pthread_mutex_t mutex = { 0 };
 static void
 pb_cut() {
 	struct Row *r, *last = NULL;
-	int i;
+	short int i;
 
 	for (r = rows, i = 0; r && i < ws.ws_row - 1 ; i++) {
 		last = r;
@@ -72,11 +72,11 @@ pb_cut() {
 
 static void
 pb_draw_bar(const int progress) {
-	const static unsigned int offset = 30;
-	const int width = ws.ws_col - offset - 30;
-	int i;
+	const static unsigned short offset = 30;
+	const long width = ws.ws_col - offset - 30;
+	unsigned long i;
 
-	fprintf(tty, 
+	fprintf(tty,
 			"\x1b[%uG"         /* go to column %i (CHA) */
 			" [", offset);
 	for (i = 0; i < width; i++) {
