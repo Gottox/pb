@@ -172,6 +172,7 @@ pb_get_row(const int id) {
 	if (id) {
 		for (r = rows; r; r = r->next) {
 			if (r && r->id == id) {
+				free(r->msg);
 				return r;
 			}
 		}
