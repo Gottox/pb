@@ -32,7 +32,6 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <string.h>
@@ -188,12 +187,21 @@ pb_get_row(const int id) {
 
 int
 pb(int *id, const int progress, const char *fmt, ...) {
-	int rv = 0;
+	int rv;
 	va_list args;
+
+	va_start (args, fmt);
+	rv = vpb(id, progress, fmt, args);
+	va_end(args);
+	return rv;
+}
+
+int
+vpb(int *id, const int progress, const char *fmt, va_list args) {
+	int rv = 0;
 	struct Row *r;
 
 	pthread_mutex_lock(&mutex);
-	va_start (args, fmt);
 	if (tty == NULL) {
 		rv = vfprintf (stderr, fmt, args);
 		if (progress != -1) {
@@ -210,7 +218,6 @@ pb(int *id, const int progress, const char *fmt, ...) {
 	rv = vasprintf (&r->msg, fmt, args);
 	pb_draw(r);
 out:
-	va_end(args);
 	fflush(tty);
 	pthread_mutex_unlock(&mutex);
 	return rv;
