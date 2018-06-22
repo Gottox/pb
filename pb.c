@@ -137,13 +137,13 @@ pb_clean() {
 	struct sigaction sa = { 0 };
 	struct Row *r;
 
+	sa.sa_handler = SIG_DFL;
 	for (; (r = rows);) {
 		rows = r->next;
 		free(r->msg);
 		free(r);
 	}
 	tty = NULL;
-	sa.sa_handler = SIG_DFL;
 	return pthread_mutex_destroy(&mutex) == 0
 		&& sigaction(SIGWINCH, &sa, NULL) != -1 ? 0 : -1;
 }
@@ -152,13 +152,13 @@ int
 pb_init() {
 	struct sigaction sa = { 0 };
 
+	sa.sa_handler = pb_sigwinch;
 	if (!isatty(fileno(stderr)) || strcmp(getenv("TERM"), "dumb") == 0
 			|| pthread_mutex_init(&mutex, NULL) != 0
 			|| sigaction(SIGWINCH, &sa, NULL) == -1) {
 		return -1;
 	}
 	tty = stderr;
-	sa.sa_handler = pb_sigwinch;
 	pb_sigwinch(0);
 	return 0;
 }
