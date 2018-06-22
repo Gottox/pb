@@ -30,6 +30,7 @@
 
 #define _DEFAULT_SOURCE
 
+#include <unistd.h>
 #include <pthread.h>
 
 static void *
