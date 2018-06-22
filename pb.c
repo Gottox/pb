@@ -38,8 +38,6 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define MIN(x, y) ((x) > (y) ? (y) : (x))
-
 struct Row {
 	int id;
 	short int progress;
@@ -91,9 +89,8 @@ pb_draw_bar(const int progress) {
 
 static void
 pb_draw_row(const struct Row *row) {
-
 	fputs("\x1b[K", tty);   /* clear line from cursor to end (EL) */
-	fwrite(row->msg, sizeof(char), MIN(ws.ws_col, strlen(row->msg)), tty);
+	fputs(row->msg, tty);
 	if (row->progress >= 0) {
 		pb_draw_bar(row->progress);
 	}
