@@ -54,6 +54,10 @@ int pb_init(void);
  */
 int pb(int *id, const int progress, const char *fmt, ...);
 
+/* Write a message
+ *
+ * same as pb(), but accepts a va_args argument.
+ */
 int vpb(int *id, const int progress, const char *fmt, va_list args);
 
 /* Clean up resources held by pb.
