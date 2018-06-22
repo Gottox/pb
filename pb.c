@@ -155,7 +155,7 @@ int
 pb_init() {
 	static const struct sigaction sa = { .sa_handler = pb_sigwinch, { { 0 } } };
 
-	if (!isatty(fileno(stderr))
+	if (!isatty(fileno(stderr)) || strcmp(getenv("TERM"), "dumb") == 0
 			|| pthread_mutex_init(&mutex, NULL) != 0
 			|| sigaction(SIGWINCH, &sa, NULL) == -1) {
 		return -1;
