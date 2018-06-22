@@ -71,8 +71,8 @@ pb_cut() {
 static void
 pb_draw_bar(const int progress) {
 	const static unsigned short offset = 30;
-	const long width = ws.ws_col - offset - 30;
-	unsigned long i;
+	const long width = ws.ws_col * 70 / 100 - offset;
+	long i;
 
 	fprintf(tty,
 			"\x1b[%uG"         /* go to column %i (CHA) */
