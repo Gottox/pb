@@ -83,8 +83,7 @@ pb_draw_bar(const int progress) {
 	fprintf(tty,
 			"] "
 			"\x1b[K"           /* clear line from cursor to end (EL) */
-			"% 3i%%",
-			progress);
+			"% 3i%%", progress);
 }
 
 static void
