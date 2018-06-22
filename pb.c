@@ -72,19 +72,19 @@ pb_cut() {
 
 static void
 pb_draw_bar(const int progress) {
-	const static int offset = 30;
+	const static unsigned int offset = 30;
 	const int width = ws.ws_col - offset - 30;
 	int i;
 
 	fprintf(tty, 
-			"\x1b[%iG"       /* go to column %i */
+			"\x1b[%uG"         /* go to column %i (CHA) */
 			" [", offset);
 	for (i = 0; i < width; i++) {
 		fputc(progress * width > i * 100 ? '#' : ' ', tty);
 	}
 	fprintf(tty,
 			"] "
-			"\x1b[K"           /* clear line from cursor to end */
+			"\x1b[K"           /* clear line from cursor to end (EL) */
 			"% 3i%%",
 			progress);
 }
@@ -92,14 +92,16 @@ pb_draw_bar(const int progress) {
 static void
 pb_draw_row(const struct Row *row) {
 
-	fputs("\x1b[K", tty);   /* clear line from cursor to end */
+	fputs("\x1b[K", tty);   /* clear line from cursor to end (EL) */
 	fwrite(row->msg, sizeof(char), MIN(ws.ws_col, strlen(row->msg)), tty);
 	if (row->progress >= 0) {
 		pb_draw_bar(row->progress);
 	}
+	/* make sure the line is terminated. terminal resizing
+	 * looks nicer if it does. */
 	fputs(
-			"\n\x1b[A",         /* make sure the line is terminated.
-			                     * terminal resizing looks nicer if it does. */
+			"\n"
+			"\x1b[A",           /* One row up (CUU) */
 			tty);
 }
 
@@ -108,8 +110,7 @@ pb_draw(const struct Row *row) {
 	struct Row *r;
 	fputs(
 			"\x1b[s"            /* save cursor position */
-			"\x1b[7l"           /* disable row wrap */
-			"\x1b[?25l"         /* disable cursor */
+			"\x1b[?7;25l"       /* disable row wrap and cursor (DECRST) */
 			"\r",               /* row start */
 			tty);
 	for (r = rows; r; r = r->next) {
@@ -123,8 +124,7 @@ pb_draw(const struct Row *row) {
 	}
 	fputs(
 			"\x1b[u"            /* restore cursor position */
-			"\x1b[7h"           /* enable row wrap */
-			"\x1b[?25h",        /* enable cursor */
+			"\x1b[?7;25h",       /* enable row wrap and cursor (DECSET)*/
 			tty);
 }
 
@@ -141,7 +141,7 @@ pb_clean() {
 	static const struct sigaction sa = { .sa_handler = SIG_DFL, { { 0 } } };
 	struct Row *r;
 
-	for(; (r = rows);) {
+	for (; (r = rows);) {
 		rows = r->next;
 		free(r->msg);
 		free(r);
@@ -203,21 +203,20 @@ vpb(int *id, const int progress, const char *fmt, va_list args) {
 
 	pthread_mutex_lock(&mutex);
 	if (tty == NULL) {
-		rv = vfprintf (stderr, fmt, args);
+		rv = vfprintf(stderr, fmt, args);
 		if (progress != -1) {
-			fprintf(stderr, " [% 3i%%]", progress);
+			fprintf(stderr, "\t% 3i%%", progress);
 		}
 		fputc('\n', stderr);
-		goto out;
+	} else {
+		r = pb_get_row(id ? *id : 0);
+		r->progress = progress;
+		if (id) {
+			*id = r->id;
+		}
+		rv = vasprintf (&r->msg, fmt, args);
+		pb_draw(r);
 	}
-	r = pb_get_row(id ? *id : 0);
-	r->progress = progress;
-	if (id) {
-		*id = r->id;
-	}
-	rv = vasprintf (&r->msg, fmt, args);
-	pb_draw(r);
-out:
 	fflush(tty);
 	pthread_mutex_unlock(&mutex);
 	return rv;
