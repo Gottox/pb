@@ -177,7 +177,7 @@ pb_get_row(const int id) {
 		}
 	}
 	r = calloc(sizeof(struct Row), 1);
-	r->id = next_id++;
+	r->id = id ? id : next_id++;
 	r->next = rows;
 	rows = r;
 	fputc('\n', tty);       /* Reserve a new row */
