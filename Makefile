@@ -1,4 +1,4 @@
-CFLAGS = -Wpedantic -Wall -Werror -g
+CFLAGS = -ansi -Wpedantic -Wall -Werror -g
 
 demo: demo.c pb.c pb.h
 	$(CC) -pthread demo.c pb.c -o $@ $(CFLAGS) $(LDFLAGS)
